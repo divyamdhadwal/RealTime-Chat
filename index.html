@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <!-- Setup SERVER.IO on the CLIENT-->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <br>
+        <div class="jumbotron">
+            <h1 class="display-4">
+                Send Message
+            </h1>
+            <br>
+            <input id= "name" class="form-control" placeholder="Your Name">
+            <br>
+            <textarea id="message" class="form-control" placeholder="Your Message"></textarea>
+            <br>
+            <button id="send" class="btn btn-primary">Send</button>
+        </div>
+        <div id="messages">
+
+        </div>
+        <script>
+            //This initialization will try to make a connection to the socket.io server at the same URL.
+            var socket = io()
+
+            //Execute below lines as soon as the document loads.
+            $(() => {
+                /*
+                    Whenever the user clicks the HTML element with id="click":
+                    1. Create a message variable in JSON format such that it has two keys: name and message
+                    2. Fetch the value of name and message from HTML elements with their corresponding ids using JQuery.
+                    3. Call postMessage function and pass variable created in STEP 1.
+                    Call getMessages function.
+                */
+                $("#send").click(() => {
+                    var message = {name: $("#name").val(), message: $("#message").val()}
+                    postMessage(message)
+                })
+                getMessages()
+            })
+
+            //Add an event listener for the "message" event sent by the Server after the document has loaded.
+            socket.on('message', showMessage)
+            
+            /*
+                Initiate a GET request to server at "/messages" and:
+                1. Receive the data sent by the server as "data" variable.
+                2. Iterate over the "data" variable and for each pair of value, call the addMessages function.
+            */
+            function getMessages(){
+                $.get('http://localhost:3000/messages', (data) => {
+                    data.forEach(showMessage)
+                })
+            }
+
+            //Add each message to the the HTML element with id="messages".
+            function showMessage(message){
+                $("#messages").append(`<h4> ${message.name} </h4> <p> ${message.message} </p>`)
+            }
+
+            //Send the current instance of "message" variable to the server at /messages.
+            function postMessage(message){
+                $.post('http://localhost:3000/messages', message)
+            }
+        </script>
+</body>
+</html>
